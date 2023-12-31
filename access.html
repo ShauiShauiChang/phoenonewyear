@@ -1,0 +1,82 @@
+<!-- access.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type='text/javascript'>
+  window.smartlook||(function(d) {
+    var o=smartlook=function(){ o.api.push(arguments)},h=d.getElementsByTagName('head')[0];
+    var c=d.createElement('script');o.api=new Array();c.async=true;c.type='text/javascript';
+    c.charset='utf-8';c.src='https://web-sdk.smartlook.com/recorder.js';h.appendChild(c);
+    })(document);
+    smartlook('init', '1c4a8b2b9bfd33f0c682a86c60ca4fce821453af', { region: 'eu' });
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Challenge</title>
+
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #contentContainer {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div id="contentContainer"></div>
+
+    <script>
+        // Retrieve the random number and door value from the session
+        const sessionQuery = sessionStorage.getItem('accessQuery');
+        const sessionDoor = sessionStorage.getItem('doorValue');
+
+        // Retrieve the query parameters from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlQuery = urlParams.get('query');
+        const urlDoor = urlParams.get('door');
+
+        // Check if the session queries match the URL queries
+        if (sessionQuery === urlQuery && sessionDoor === urlDoor) {
+            // Allow access and fetch the content based on the door value
+            const contentContainer = document.getElementById('contentContainer');
+
+            if (urlDoor) {
+                const doorNumber = parseInt(urlDoor, 10);
+                if (!isNaN(doorNumber)) {
+                    fetch(`door/${doorNumber}.php`)
+                        .then(response => response.text())
+                        .then(content => {
+                            contentContainer.innerHTML = content;
+
+                            // Execute the JavaScript from the loaded content
+                            const scriptElement = contentContainer.querySelector('script');
+                            if (scriptElement) {
+                                const script = document.createElement('script');
+                                script.text = scriptElement.textContent;
+                                document.head.appendChild(script);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching content:', error);
+                            contentContainer.innerHTML = '<p>Error loading content.</p>';
+                        });
+                } else {
+                    contentContainer.innerHTML = '<p>Error: Invalid door number.</p>';
+                }
+            } else {
+                contentContainer.innerHTML = '<p>Error: Door number not provided.</p>';
+            }
+        } else {
+            // Deny access
+            document.write('<p>Access denied.</p>');
+        }
+    </script>
+</body>
+</html>
